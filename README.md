@@ -1,4 +1,5 @@
 # demo1
+基于vue和springboot 的后台管理系统。此为vue编写的后台界面。
 
 > A Vue.js project
 
