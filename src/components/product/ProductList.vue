@@ -18,7 +18,7 @@
           </el-col>
           <el-col span="" style="float: right;margin-right: 22px">
             <el-form-item>
-              <el-button type="primary" class="searchBtn" icon="el-icon-search" @click="searchGoods($event)">查询</el-button>
+              <el-button type="primary" class="searchBtn" icon="el-icon-search" @click="searchGoods()">查询</el-button>
             </el-form-item>
           </el-col>
 
@@ -34,8 +34,8 @@
     <el-table :data="tableProData" border :header-cell-style="{'text-align':'center'}">
       <el-table-column type="index" align="center" :index="indexUp" width="60px" label="序号"></el-table-column>
       <el-table-column prop="gId" align="center" label="ID"></el-table-column>
-      <el-table-column prop="gName"  align="center" label="商品名称"></el-table-column>
-      <el-table-column prop="gCat" align="center" label="类别"></el-table-column>
+      <el-table-column prop="gName" align="center" label="商品名称" sortable></el-table-column>
+      <el-table-column prop="gCat" align="center" label="类别" sortable></el-table-column>
       <el-table-column prop="gNum" align="center" label="数量" sortable></el-table-column>
       <el-table-column prop="gPrice" align="center" label="价格" sortable></el-table-column>
       <el-table-column label="操作" width="250px" fixed="right">
@@ -55,6 +55,18 @@
       </el-table-column>
     </el-table>
 
+    <div class="block">
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="currentPage"
+        :page-sizes="[2,5, 10, 20, 50]"
+        :page-size="pageCount"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="totalPro">
+      </el-pagination>
+    </div>
+
     <!-- 新增弹出框 -->
     <el-dialog title="新增商品" class="add_dialog" :visible.sync="dialgAddGoods">
       <el-form :model="addForm" ref="proRef" class="addG_form">
@@ -62,7 +74,7 @@
           <el-input v-model="addForm.gName" class="g_input" clearable autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="商品类别" prop="gCat" class="formItem" :label-width="formLabelWidth">
-          <el-select v-model="addForm.gCat"  clearable class="g_input" placeholder="请选择类别">
+          <el-select v-model="addForm.gCat" clearable class="g_input" placeholder="请选择类别">
             <el-option label="0 电脑" value="电脑"></el-option>
             <el-option label="1 家具" value="家具"></el-option>
             <el-option label="2 手机" value="手机"></el-option>
@@ -135,24 +147,24 @@
           goodsName: '',
           goodsCat: ''
         },
-        tableProData:[],
+        tableProData: [],
         // 表格数据
-      /*  tableProData: [
-          {
-            "gId": '101',
-            "gName": '电脑',
-            "gCat": '电子产品',
-            "gNum": '12',
-            "gPrice": '5999'
-          },
-          {
-            gId: '102',
-            gName: '手机',
-            gCat: '电子产品',
-            gNum: '122',
-            gPrice: '2999'
-          }
-        ],*/
+        /*  tableProData: [
+            {
+              "gId": '101',
+              "gName": '电脑',
+              "gCat": '电子产品',
+              "gNum": '12',
+              "gPrice": '5999'
+            },
+            {
+              gId: '102',
+              gName: '手机',
+              gCat: '电子产品',
+              gNum: '122',
+              gPrice: '2999'
+            }
+          ],*/
         dialgAddGoods: false,  // 新增弹出框 默认不显示，点击按钮 变成true,才显示
         dialogDelete: false,
         dialogEdit: false,
@@ -172,7 +184,11 @@
         formLabelWidth: '120px',
         gN: '',     // 删除弹出框  传入名称 （显示）
         gI: '',      // 删除弹出框  传入所删除商品的id (根据id删除)
-        dIndex: ''   // 删除表格  索引
+        dIndex: '',   // 删除表格  索引
+
+        currentPage: 1,    // 当前页
+        pageCount: 5,       // 每页 记录数
+        totalPro: ''      // 总数
       }
 
     },
@@ -182,58 +198,54 @@
       },
 
       //条件查询
-      searchGoods(event) {
+      searchGoods() {
         var name = this.gForm.goodsName.trim();
         var cate = this.gForm.goodsCat.trim();
-       /* if(name =="" && cate != ""){
-          this.$message.success("类别")
-        }else if(name !="" && cate == ""){
-          this.$message.success("名称")
-        }else if(name !="" && cate != ""){
-          this.$message.success("名称+类别")
-        }else {
-          this.$message.success("查询所有")
-        }*/
-        event.preventDefault();
+
         let formData = new FormData();
-        formData.append("gName",name);
-        formData.append("gCat",cate);
-        this.$http.post('http://localhost:8088/pro/search',formData,{'Content-type': 'application/json;charset=UTF-8'})
+        formData.append("gName", name);
+        formData.append("gCat", cate);
+        formData.append("currentPage", this.currentPage);
+        formData.append("pageSize", this.pageCount);
+        this.$http.post('http://localhost:8088/pro/search', formData, {'Content-type': 'application/json;charset=UTF-8'})
           .then((res) => {
-            console.log("查询："+res.data.code);
-            if(res.data.code == 200){
+            console.log("查询：" + res.data.code);
+            if (res.data.code == 200) {
               this.tableProData = [];
+              this.totalPro = res.data.total;
               this.tableProData = res.data.data;
-            }else {
+            } else {
               this.$message.error("暂无相关数据");
             }
           })
-          .catch((err) =>{
+          .catch((err) => {
             console.log("请求失败" + err);
           })
+
       },
+
 
       // 修改 弹出框
       handleEdit(index, row) {
-        console.log( index+ "  编辑：" + row);
+        console.log(index + "  编辑：" + row);
         this.editForm = row;   // 该行数据
       },
       // 逻辑
-      updateGoods(formData){
-         console.log("已修改："+formData.gId);
-        this.$http.post('http://localhost:8088/pro/updatePro',this.editForm,{'Content-type': 'application/json;charset=UTF-8'})
-          .then((res) =>{
-             if(res.data.code == 200){
-               this.$message.success("修改成功");
-               this.editForm = res.data.data;
-             }else {
-               this.$message.error("修改失败"+err);
-             }
+      updateGoods(formData) {
+        console.log("已修改：" + formData.gId);
+        this.$http.post('http://localhost:8088/pro/updatePro', this.editForm, {'Content-type': 'application/json;charset=UTF-8'})
+          .then((res) => {
+            if (res.data.code == 200) {
+              this.$message.success("修改成功");
+              this.editForm = res.data.data;
+            } else {
+              this.$message.error("修改失败" + err);
+            }
           })
           .catch((err) => {
 
           })
-         //this.initData();
+        //this.initData();
       },
 
       // 新增
@@ -246,9 +258,11 @@
           await this.$http.post('http://localhost:8088/pro/add', this.addForm,
             {'Content-type': 'application/json;charset=UTF-8'})
             .then((result) => {
-              if(result.data.code == 200){
+              if (result.data.code == 200) {
                 console.log("新增商品状态： " + result.data.message);
-                this.initData();
+                this.$message.success("增加成功");
+                //this.initData(); //展示所有
+                this.getByPage();  // 分页展示
               }
             })
             .catch(err => {
@@ -258,28 +272,27 @@
       },
 
       // 删除弹框
-      handleDelete(index,row) {
+      handleDelete(index, row) {
         console.log("  删除：" + row.gName);
         this.gN = row.gName;
         this.gI = row.gId;
         this.dIndex = index;
       },
       // 逻辑
-      delteByGid(gId,index) {
+      delteByGid(gId, index) {
         console.log("删除的id:" + gId);
-         this.$http.post('http://localhost:8088/pro/deleteById/'+gId,
-           {'Content-type': 'application/json;charset=UTF-8'})
-           .then((res) => {
-               if(res.data.code == 200){
-                 this.$message.success("删除成功");
-                 this.tableProData.splice(index,1);
-                 //this.initData();
-               }else {
-                 this.$message.error("删除失败");
-               }
-           })
-           .catch((err) =>{
-           })
+        this.$http.post('http://localhost:8088/pro/deleteById/' + gId,
+          {'Content-type': 'application/json;charset=UTF-8'})
+          .then((res) => {
+            if (res.data.code == 200) {
+              this.$message.success("删除成功");
+              this.tableProData.splice(index, 1);
+            } else {
+              this.$message.error("删除失败");
+            }
+          })
+          .catch((err) => {
+          })
       },
 
       // 详情展示
@@ -287,25 +300,61 @@
         console.log(" 详情：" + row)
       },
 
-
       // 初始化 表格数据
-      initData: function() {
-         this.$http.get('http://localhost:8088/pro/getAll')
-           .then((res) =>{
-            if (res.data.code == 200){
+      initData: function () {
+        this.$http.get('http://localhost:8088/pro/getAll')
+          .then((res) => {
+            if (res.data.code == 200) {
               this.tableProData = []; // 先清空表格，避免重复
               this.tableProData = res.data.data;
-              console.log("商品数据："+ this.tableProData);
-            }else{
+              console.log("商品数据：" + this.tableProData);
+            } else {
               console.log("暂无数据");
             }
-           })
+          })
+      },
+      //  获取分页参数
+      getByPage: function () {
+        console.log("页：" + this.currentPage);
+        console.log("数：" + this.pageCount);
+        var formData = new FormData();
+        formData.append("currentPage", this.currentPage);
+        formData.append("pageSize", this.pageCount);
+        this.$http.post('http://localhost:8088/pro/getProByPage', formData, {'Content-type': 'application/json;charset=UTF-8'})
+          .then((res) => {
+            console.log("分页结果：" + res.data.code + "  " + res.data.message);
+            if (res.data.code == 200) {
+              this.tableProData = []; // 先清空表格，避免重复
+              this.tableProData = res.data.data;
+              this.totalPro = res.data.total;
+              console.log("分页--商品数据：" + this.tableProData);
+            } else {
+              console.log("分页--暂无数据");
+            }
+          })
+
+      },
+
+      //分页  监听变化
+      handleSizeChange(val) {
+        console.log(`每页 ${val} 条`);
+        this.pageCount = val;
+        this.getByPage();
+      },
+      handleCurrentChange(val) {
+        console.log(`当前页: ${val}`);
+        this.currentPage = val;
+        this.getByPage();
       }
-    },
+    }
+    ,
     // 页面加载执行  （同create）
     mounted: function () {
-      this.initData();
+      // 初始化表格数据
+      // this.initData();  // 不分页
+      this.getByPage();   // 分页展示
     }
+
 
   }
 </script>
@@ -323,6 +372,13 @@
   .g_input {
     width: 300px;
     float: left;
+  }
+
+  /* 分页  */
+  .block {
+    position: absolute;
+    margin-top: 12px;
+    margin-left: 16px;
   }
 
 </style>

@@ -92,9 +92,9 @@
     margin-left: 360px;
   }
   .date_cal{
-    height: 500px;
+    height: 400px;
   }
-  .el-calendar-table .el-calendar-day{
+  .el-calendar-table .el-calendar-day {
     height: 45px;
   }
 
