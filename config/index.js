@@ -23,7 +23,7 @@ module.exports = {
         target: 'http://127.0.0.1:8088/', // 后端访问域名
         changeOrigin: true,
         pathRewrite: {
-          '^/api': '/'           //由于后端的访问路径没有'/api',所有替换为'/'
+          '^/api': '/'           //由于后端的访问路径没有'/api',所以替换为'/'
         }
       }
     },

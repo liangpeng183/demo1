@@ -44,7 +44,7 @@
                 <!--  文本  -->
                 <span >用户管理</span>
               </template>
-
+              <hr>
               <!-- 二级菜单 -->
               <el-menu-item class="el-menu-item" style="padding-left: 80px;" index="1-1" @click="showUser">
                 <template slot="title">
@@ -65,6 +65,7 @@
                 <!--  文本  -->
                 <span>商家管理</span>
               </template>
+              <hr>
             </el-submenu>
 
             <el-submenu index="3">
@@ -74,7 +75,7 @@
                 <!--  文本  -->
                 <span >商品管理</span>
               </template>
-
+              <hr>
               <el-menu-item class="el-menu-item" style="padding-left: 80px;" index="3-1" @click="proCate">
                 <template slot="title">
                   <i class="el-icon-goods"></i>
@@ -96,7 +97,7 @@
                 <!--  文本  -->
                 <span>数据统计</span>
               </template>
-
+              <hr>
               <el-menu-item class="el-menu-item" style="padding-left: 80px;" index="4-1" @click="showDeal">
                 <template>
                   <i class="el-icon-lollipop"></i>
@@ -202,56 +203,6 @@
     },
     data() {
       return {
-        tableData: [
-          {
-            aid: '101',
-            aname: 'aaaa',
-            sponsor: 'lplp',
-            host: 'lp',
-            adate: '2020-08-02',
-            alocation: '深圳',
-            acontent: '基金交易大会'
-          },
-          {
-            aid: '102',
-            aname: 'bbbb',
-            sponsor: 'lplp',
-            host: 'lp',
-            adate: '2020-08-03',
-            alocation: '香港',
-            acontent: '基金交易大会'
-          },
-          {
-            aid: '103',
-            aname: 'cccc',
-            sponsor: 'lplp',
-            host: 'lp',
-            adate: '2020-08-04',
-            alocation: '上海',
-            acontent: '基金交易大会'
-          }
-        ],
-        num: 1,
-        value: '',
-        options: [
-          {
-            label: '北京',
-            value: '0'
-          },
-          {
-            label: '深圳',
-            value: '1'
-          },
-          {
-            label: '广州',
-            value: '2'
-          },
-          {
-            label: '上海',
-            value: '3'
-          },
-        ],
-        s_value: true,
         active: 0,
         /* 个人中心  */
         avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
@@ -308,9 +259,17 @@
       changeNum(value) {
       },
       logout() {
-        this.$router.push("/login");
-        this.$message.success("退出登录。。")
-        Cookies.remove("username");
+        this.$confirm('确定退出系统？','提示',{
+          confirmButtonText:'确定',
+          cancelButtonText:'取消',
+          type: 'warning'
+        }).then(() =>{
+          this.$router.push("/login");
+          this.$message.success("退出登录。。");
+          Cookies.remove("username");
+        }).catch(()=>{
+          return;
+        });
       },
       // 进度展示
       goNext() {
