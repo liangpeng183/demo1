@@ -6,22 +6,34 @@
       <div class="avater_box">
         <img src="../assets/logo.png" alt="">
       </div>
+
+      <el-dropdown style="left: 186px;top: 8px;" trigger="click">
+           <span class="el-dropdown-link">
+            {{ lan }}<i class="el-icon-arrow-down el-icon--right"></i>
+           </span>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item @click.native="changeToCH">中文</el-dropdown-item>
+          <el-dropdown-item @click.native="changeToEN">English</el-dropdown-item>
+          <el-dropdown-item @click.native="changeToCHT">繁体中文</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+
       <!-- 表单  -->
       <!--   v-model 双向绑定 ， :rules 验证规则 ,ref 引用 -->
       <el-form label-width="0px" ref="loginRef" :model="loginForm" :rules="loginRules" class="form_box">
         <!--账号-->
         <!-- prop 属性 绑定验证规则  （item） -->
         <el-form-item prop="username">
-          <el-input class="" placeholder="账号" v-model="loginForm.username" prefix_icon="el_icon_search"></el-input>
+          <el-input class=""  :placeholder="$t('m.placeholder.account')" v-model="loginForm.username" prefix_icon="el_icon_search"></el-input>
         </el-form-item>
         <!--密码-->
         <el-form-item prop="password">
-          <el-input type="password" placeholder="密码" class="" v-model="loginForm.password"></el-input>
+          <el-input type="password" :placeholder="$t('m.placeholder.password')" class="" v-model="loginForm.password"></el-input>
         </el-form-item>
         <!--  按钮 -->
         <el-form-item class="btns">
-          <el-button type="primary" @click="login">登录</el-button>
-          <el-button type="info" @click="resetLoginForm">重置</el-button>
+          <el-button type="primary" @click="login" v-text="$t('m.login')">登录</el-button>
+          <el-button type="info" @click="resetLoginForm" v-text="$t('m.reset')">重置</el-button>
         </el-form-item>
 
       </el-form>
@@ -33,16 +45,17 @@
 <!--行为-->
 <script>
   import Cookies from 'js-cookie'
+
   export default {
     name: 'Login',
     // 数据
     data() {
       return {
+        lan: '中文',
         // 登录表单 数据绑定
         loginForm: {
           username: '',
           password: ''
-
         },
         // 表单 验证规则对象
         loginRules: {
@@ -53,7 +66,7 @@
           ],
           password: [
             {required: true, message: '请输入密码', trigger: 'blur'},
-            {min: 4, max: 15, message: '4到8个字符（不含特殊字符）', trigger: 'blur'}
+            {min: 4, max: 12, message: '4到12个字符（不含特殊字符）', trigger: 'blur'}
           ]
         }
 
@@ -82,7 +95,7 @@
                 // 验证  、登录成功后
                 // 1、 token 口令 ---》  sessionStorage
                 window.sessionStorage.setItem("token", "lplplp");
-                Cookies.set("username",this.loginForm.username);//cookie存放 当前用户名
+                Cookies.set("username", this.loginForm.username);//cookie存放 当前用户名
                 // 2、 通过路由编程  跳转到主页
                 this.$router.push("/index");
               } else {
@@ -90,7 +103,7 @@
               }
             })
             .catch(err => {      // 请求失败
-              this.$message.error("请求错误！");
+              this.$message.error("服务器连接失败");
               console.log("请求错误")
             });
 
@@ -101,7 +114,27 @@
       resetLoginForm() {
         //console.log("重置表单！")
         this.$refs.loginRef.resetFields();
+      },
+      // 中文切换
+      changeToCH() {
+        this.lan = "中文";
+        console.log("中文");
+        this.lang = 'zh-CN';
+        this.$i18n.locale = this.lang;//关键语句
+      },
+      // 英文切换
+      changeToEN() {
+        this.lan = "English";
+        this.lang = 'en-US';
+        this.$i18n.locale = this.lang;//关键语句
+        console.log("英文:"+this.$i18n.locale);
+      },
+      changeToCHT(){
+        this.lan = "繁体";
+        this.lang = 'zh-CNT';
+        this.$i18n.locale = this.lang;//关键语句
       }
+
     }
   }
 </script>
